@@ -12,11 +12,13 @@ physics.start()
 physics.setGravity( 0, 1)
 --physics.setDrawMode("hybrid")
 
+local playerBullets = {} -- Table that holds the players Bullets
+
 local background = display.setDefault( "background", 186/255, 239/255, 205/255)
 
 local music = audio.loadSound( "Bomberman.mp3")
 
-audio.play( music )
+--audio.play( music )
 
 local ground = display.newRect( display.contentCenterX, 555, 500, 60)
 ground.id = "ground"
@@ -101,7 +103,7 @@ end
 local function run()
 
 	local playerBall = display.newCircle( display.contentCenterX, 450, 37)
-	playerBall:setFillColor( 0, 234/255, 35/255)
+	playerBall:setFillColor( 0, 0, 0)
 	playerBall.id = "player"
 	physics.addBody( playerBall, "dynamic", {
 		friction = 0.5,
@@ -112,23 +114,25 @@ local function run()
 		createBall()
 	end
 
-	local rightButton = display.newRoundedRect( 258, 455, 100, 120, 5)
-	rightButton:setFillColor( 0, 0, 0)
-	rightButton.alpha = 0.8
+	--local rightButton = display.newRoundedRect( 258, 455, 100, 120, 5)
+	--rightButton:setFillColor( 0, 0, 0)
+	--rightButton.alpha = 0
+--
+	--local leftButton = display.newRoundedRect( 60, 455, 100, 120, 5)
+	--leftButton:setFillColor( 0, 0, 0)
+	--leftButton.alpha = 0
+--
+	--local rightArrow = display.newImageRect( "assets/rightarrow.png", 111, 109)
+	--rightArrow.alpha = 0
+	--rightArrow.x = 260
+	--rightArrow.y = 455
+--
+	--local leftArrow = display.newImageRect( "assets/leftarrow.png", 111, 109)
+	--leftArrow.alpha = 0
+	--leftArrow.x = 58
+	--leftArrow.y = 455
 
-	local leftButton = display.newRoundedRect( 60, 455, 100, 120, 5)
-	leftButton:setFillColor( 0, 0, 0)
-	leftButton.alpha = 0.8
-
-	local rightArrow = display.newImageRect( "assets/rightarrow.png", 111, 109)
-	rightArrow.alpha = 0.4
-	rightArrow.x = 260
-	rightArrow.y = 455
-
-	local leftArrow = display.newImageRect( "assets/leftarrow.png", 111, 109)
-	leftArrow.alpha = 0.4
-	leftArrow.x = 58
-	leftArrow.y = 455
+	local shootButton = display.newRoundedRect( 50, 350, 60, 20, 10)
 
 	local function playerCollision( self, event )
 	 
@@ -156,65 +160,104 @@ local function run()
 	        if ( event.phase == "moved" ) then
 	            print( "Moved phase of touch event detected." )
 	            self.x = event.x - event.xStart + self.markX
-	            rightButton.alpha = 0.01
-	        	rightArrow.alpha = 0.01
-	 			leftButton.alpha = 0.01
-	        	leftArrow.alpha = 0.01
+	       --     rightButton.alpha = 0.01
+	       -- 	rightArrow.alpha = 0.01
+	 		--	leftButton.alpha = 0.01
+	       -- 	leftArrow.alpha = 0.01
 	        elseif ( event.phase == "ended" or event.phase == "cancelled" ) then
 	 
 	            -- Reset touch focus
 	            display.getCurrentStage():setFocus( nil )
 	            self.isFocus = nil
 	            print( "Touch event ended on: " .. self.id )
-	            rightButton.alpha = 0.8
-	    		rightArrow.alpha = 0.8
-	    		leftButton.alpha = 0.8
-	    		leftArrow.alpha = 0.8
-	        end
+	           -- rightButton.alpha = 0.8
+	    		--rightArrow.alpha = 0.8
+	    		--leftButton.alpha = 0.8
+	    		--leftArrow.alpha = 0.8
+	       end
 	    end
 
 	    return true
 	end
 
-	function rightButton:touch( event )
-	    if ( event.phase == "moved" or event.phase == "began" ) then
+	--function rightButton:touch( event )
+	  --  if ( event.phase == "moved" or event.phase == "began" ) then
 	        -- move the character up
-	        transition.moveBy( playerBall, { 
-	        	x = 20, -- move 5 in the x direction 
-	        	y = 0, -- move up 0 pixels
-	        	time = 1 -- move in a 1/10 of a second
-	        	} )
-	        rightButton.alpha = 0.01
-	        rightArrow.alpha = 0.01
-	    elseif ( event.phase == "ended") then
-	    	rightButton.alpha = 0.8
-	    	rightArrow.alpha = 0.8
-	    end
+	      --  transition.moveBy( playerBall, { 
+	      --  	x = 20, -- move 5 in the x direction 
+	       -- 	y = 0, -- move up 0 pixels
+	        --	time = 1 -- move in a 1/10 of a second
+	        --	} )
+	        --rightButton.alpha = 0.01
+	        --rightArrow.alpha = 0.01
+	    --elseif ( event.phase == "ended") then
+	    	--rightButton.alpha = 0.8
+	    	--rightArrow.alpha = 0.8
+	  --  end
 
-	    return true
+	   -- return true
+	--end
+
+	--function leftButton:touch( event )
+	    --if ( event.phase == "moved" or event.phase == "began" ) then
+	        -- move the character up
+	        --transition.moveBy( playerBall, { 
+	          --  x = -20, -- move  in the x direction 
+	          --  y = 0, -- move up
+	           -- time = 1 -- move in a 1/10 of a second
+	           -- } )
+	        --leftButton.alpha = 0.01
+	        --leftArrow.alpha = 0.01
+	    --elseif ( event.phase == "ended") then
+	    	--leftButton.alpha = 0.8
+	    	--leftArrow.alpha = 0.8
+		--end
+
+	    ---return true
+	--end
+
+	function shootButton:touch( event )
+    if ( event.phase == "began" ) then
+        -- make a bullet appear
+        local aSingleBullet = display.newCircle( 0, 0, 10 )
+        aSingleBullet.x = playerBall.x
+        aSingleBullet.y = playerBall.y
+        physics.addBody( aSingleBullet, 'dynamic' )
+        -- Make the object a "bullet" type object
+        aSingleBullet.isBullet = true
+        aSingleBullet.gravityScale = (-100)
+        aSingleBullet.id = "bullet"
+        aSingleBullet:setLinearVelocity( 0, 10 )
+
+        table.insert(playerBullets,aSingleBullet)
+        print("# of bullet: " .. tostring(#playerBullets))
+    end
+
+    function checkPlayerBulletsOutOfBounds()
+	-- check if any bullets have gone off the screen
+	local bulletCounter
+
+    	if #playerBullets > 0 then
+    		for bulletCounter = #playerBullets, 1 ,-1 do
+        		if playerBullets[bulletCounter].y > display.contentHeight + 1000 then
+            		playerBullets[bulletCounter]:removeSelf()
+           	  		playerBullets[bulletCounter] = nil
+           	  		table.remove(playerBullets, bulletCounter)
+              		print("remove bullet")
+          	 	end
+      	 	end
+  		end
 	end
 
-	function leftButton:touch( event )
-	    if ( event.phase == "moved" or event.phase == "began" ) then
-	        -- move the character up
-	        transition.moveBy( playerBall, { 
-	            x = -20, -- move  in the x direction 
-	            y = 0, -- move up
-	            time = 1 -- move in a 1/10 of a second
-	            } )
-	        leftButton.alpha = 0.01
-	        leftArrow.alpha = 0.01
-	    elseif ( event.phase == "ended") then
-	    	leftButton.alpha = 0.8
-	    	leftArrow.alpha = 0.8
-		end
+    return true
+end
 
-	    return true
-	end
 
-	rightButton:addEventListener( "touch", rightButton )
-	leftButton:addEventListener( "touch", leftButton )
+
+	--rightButton:addEventListener( "touch", rightButton )
+	--leftButton:addEventListener( "touch", leftButton )
 	playerBall:addEventListener( "touch", playerBall )
+	shootButton:addEventListener( "touch", shootButton )
 
 end
 
@@ -230,3 +273,4 @@ local function start( event )
 end
 
 startButton:addEventListener( "touch", start)
+
